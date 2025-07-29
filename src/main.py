@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from find_plate_area import find_plate_area
 from threshold import apply_threshold
 from erosion import apply_erosion

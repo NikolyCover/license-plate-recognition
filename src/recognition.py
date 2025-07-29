@@ -1,4 +1,3 @@
-
 from moments import calculate_invariant_moments
 import pickle
 import numpy as np
