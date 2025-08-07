@@ -2,9 +2,12 @@
 from find_plate_area import find_plate_area
 from threshold import apply_threshold
 from erosion import apply_erosion
+from dilatation import apply_dilation 
 from utils import load_image, show_image
 from segment_characters import segment_characters, extract_characters
 from recognition import recognize_character
+
+import cv2
 
 if __name__ == "__main__":
     image_path = "mock/placa1.jpg"
@@ -15,10 +18,20 @@ if __name__ == "__main__":
     if plate is not None:
         show_image("Placa Recortada", plate, cmap=None)
 
+        plate = cv2.GaussianBlur(plate, (5, 5), 0)
+
         binary = apply_threshold(plate)
         show_image("Placa Binarizada (Otsu)", binary)
 
-        eroded = apply_erosion(binary, iterations=1)
+
+
+        dilated = apply_dilation(binary, iterations=4)
+        show_image("Placa Após Dilata", dilated)
+
+        # eroded = apply_erosion(dilated, iterations=1)
+        # show_image("Placa Após Erosão", eroded)
+
+        eroded = apply_erosion(dilated, iterations=1)
         show_image("Placa Após Erosão", eroded)
 
         segmented_image = segment_characters(eroded)

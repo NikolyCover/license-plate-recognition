@@ -10,9 +10,9 @@ def generate_character_database(image_folder, output_file="char_database.pkl"):
         if filename.lower().endswith((".png", ".jpg", ".jpeg")):
 
             name_without_ext = os.path.splitext(filename)[0]  # "A_1"
-            # if name_without_ext.endswith(("_1", "_2")):
-            #     print(f"> Imagem pulada: {filename}")
-            #     continue
+            if name_without_ext.endswith(("_2")):
+                print(f"> Imagem pulada: {filename}")
+                continue
 
             image_path = os.path.join(image_folder, filename)
             image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
