@@ -7,7 +7,7 @@ from segment_characters import segment_characters, extract_characters
 from recognition import recognize_character
 
 if __name__ == "__main__":
-    image_path = "mock/placa2.jpg"
+    image_path = "mock/placa1.jpg"
 
     plate = load_image(image_path)
     #plate = find_plate_area(plate)  
