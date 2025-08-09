@@ -5,11 +5,12 @@ from morphology import apply_erosion, apply_dilation , apply_closing, apply_open
 from utils import load_image, show_image
 from segment_characters import segment_characters, extract_characters
 from recognition import recognize_character
+from recognition_tm import recognize_character_tm
 
 import cv2
 
 if __name__ == "__main__":
-    image_path = "mock/PLATE_1.png"
+    image_path = "mock/PLATE_9.png"
 
     plate = load_image(image_path)
     #plate = find_plate_area(plate)  
@@ -37,7 +38,9 @@ if __name__ == "__main__":
         characters, boxes = extract_characters(plate, segmented_image)
 
         for i, char in enumerate(characters):
-            label = recognize_character(char, pos=i)
+            label = recognize_character(char, pos=i)             
+            #label_tm = recognize_character_tm(char, pos=i)             
+            #label = label_tm if label_tm != '?' else label_hu          
             show_image(f"Caractere {i + 1}: {label}", char)
 
     else:
