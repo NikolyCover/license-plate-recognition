@@ -12,7 +12,7 @@ from opening import apply_opening
 import cv2
 
 if __name__ == "__main__":
-    image_path = "mock/placa.jpg"
+    image_path = "mock/PLATE_3.png"
 
     plate = load_image(image_path)
     #plate = find_plate_area(plate)  
@@ -25,7 +25,7 @@ if __name__ == "__main__":
         plate = apply_threshold(plate)
         show_image("Placa Binarizada (Otsu)", plate)
 
-        plate = apply_dilation(plate, iterations=4)
+        plate = apply_dilation(plate, iterations=3)
         show_image("Placa Após Dilatar", plate)
 
         plate = apply_erosion(plate, iterations=1)
