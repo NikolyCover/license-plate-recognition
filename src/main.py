@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 from find_plate_area import find_plate_area
 from threshold import apply_threshold
-from erosion import apply_erosion
-from dilatation import apply_dilation 
+from morphology import apply_erosion, apply_dilation    
 from utils import load_image, show_image
 from segment_characters import segment_characters, extract_characters
 from recognition import recognize_character
-from closing import apply_closing
-from opening import apply_opening
 
 import cv2
 
 if __name__ == "__main__":
-    image_path = "mock/PLATE_3.png"
+    image_path = "mock/PLATE_7.png"
 
     plate = load_image(image_path)
     #plate = find_plate_area(plate)  
@@ -25,7 +22,7 @@ if __name__ == "__main__":
         plate = apply_threshold(plate)
         show_image("Placa Binarizada (Otsu)", plate)
 
-        plate = apply_dilation(plate, iterations=3)
+        plate = apply_dilation(plate, iterations=4)
         show_image("Placa Após Dilatar", plate)
 
         plate = apply_erosion(plate, iterations=1)

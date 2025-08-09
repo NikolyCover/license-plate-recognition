@@ -29,7 +29,10 @@ def calculate_geometric_features(character_img):
         x, y, w, h = cv2.boundingRect(contour)  # Retângulo delimitador
         aspect_ratio = float(w) / float(h)  # Razão de aspecto (largura/altura)
         convex_hull = cv2.convexHull(contour)  # Convexidade
-        convexity = float(area) / cv2.contourArea(convex_hull)  # Convexidade
+        
+        # Verifique se a área do contorno convexo não é zero para evitar divisão por zero
+        convex_area = cv2.contourArea(convex_hull)
+        convexity = float(area) / convex_area if convex_area != 0 else 0  # Definindo convexidade para 0 se a área for zero
 
         features['area'] = area
         features['perimeter'] = perimeter

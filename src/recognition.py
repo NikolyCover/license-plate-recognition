@@ -25,7 +25,7 @@ def recognize_character(character_img, db_path="char_database.pkl"):
             # Comparando as características geométricas
             geometry_distance = compare_geometric_features(input_geometry, entry['geometry'])
 
-            total_distance = 0.7 * moments_distance + 0.3 * geometry_distance
+            total_distance = 0.8 * moments_distance + 0.2 * geometry_distance
 
             if total_distance < min_distance:
                 min_distance = total_distance
@@ -34,11 +34,13 @@ def recognize_character(character_img, db_path="char_database.pkl"):
     return best_label
 
 def compare_geometric_features(geometry1, geometry2):
-    # Calcula a distância Euclidiana entre as características geométricas
+    # Calculando a diferença nas características geométricas
     area_diff = np.abs(geometry1['area'] - geometry2['area'])
     perimeter_diff = np.abs(geometry1['perimeter'] - geometry2['perimeter'])
     aspect_ratio_diff = np.abs(geometry1['aspect_ratio'] - geometry2['aspect_ratio'])
     convexity_diff = np.abs(geometry1['convexity'] - geometry2['convexity'])
     
-    # Retorna a soma das diferenças (distância)
-    return area_diff + perimeter_diff + aspect_ratio_diff + convexity_diff
+    # Ajustando a importância de cada característica (pesos podem ser alterados)
+    total_geometry_diff = 0.4 * area_diff + 0.3 * perimeter_diff + 0.2 * aspect_ratio_diff + 0.1 * convexity_diff
+    
+    return total_geometry_diff
