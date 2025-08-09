@@ -9,7 +9,7 @@ from recognition import recognize_character
 import cv2
 
 if __name__ == "__main__":
-    image_path = "mock/PLATE_7.png"
+    image_path = "mock/PLATE_1.png"
 
     plate = load_image(image_path)
     #plate = find_plate_area(plate)  
@@ -22,8 +22,14 @@ if __name__ == "__main__":
         plate = apply_threshold(plate)
         show_image("Placa Binarizada (Otsu)", plate)
 
-        plate = apply_closing(plate, iterations=1)
-        show_image("Placa Após Fechamento", plate)
+        # plate = apply_dilation(plate, iterations=4)
+        # show_image("Placa Após Dilatar", plate)
+
+        # plate = apply_erosion(plate, iterations=1)
+        # show_image("Placa Após Erosão", plate)
+
+        # plate = apply_closing(plate, iterations=1)
+        # show_image("Placa Após Fechamento", plate)
 
         segmented_image = segment_characters(plate)
         show_image("Imagem Segmentada", segmented_image, cmap='gray')
