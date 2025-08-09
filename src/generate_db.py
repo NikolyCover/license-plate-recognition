@@ -1,51 +1,62 @@
-import os
-import pickle
-import cv2
-from moments import calculate_invariant_moments, calculate_geometric_features
+import os, pickle, cv2, numpy as np
+from moments import calculate_invariant_moments, calculate_geometric_features, normalize_char_canvas
+
+def _geom_vec(g):
+    return np.array([g['extent'], g['solidity'], g['aspect_ratio'], g['perimeter_norm']], dtype=float)
 
 def generate_character_database(image_folder, output_file="char_database.pkl"):
     database = {}
+    geom_all = []
 
-    # Variável para contar o total de variantes
     total_variants = 0
-
     for filename in os.listdir(image_folder):
-        if filename.lower().endswith((".png", ".jpg", ".jpeg")):
-            print(f"Processando: {filename}")
+        if not filename.lower().endswith((".png", ".jpg", ".jpeg")):
+            continue
+        print(f"Processando: {filename}")
+        parts = filename.split("_")
+        if len(parts) != 2:
+            print(f"Nome não esperado: {filename}")
+            continue
 
-            # Extração do rótulo (exemplo: "A" de "A_01")
-            label = filename.split("_")[0]  # Ex: "A_01" -> "A"
-            if len(filename.split("_")) != 2:
-                print(f"Nome de arquivo não esperado: {filename}")
-                continue
+        label = parts[0]
+        path = os.path.join(image_folder, filename)
+        image = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        if image is None:
+            print(f"Falha ao carregar: {path}")
+            continue
 
-            # Caminho da imagem
-            image_path = os.path.join(image_folder, filename)
-            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        # normalizar na MESMA forma do reconhecimento
+        norm = normalize_char_canvas(image, canvas_w=208, canvas_h=130, target_h=100)
 
-            if image is None:
-                print(f"Não foi possível carregar: {image_path}")
-                continue
+        moments = calculate_invariant_moments(norm)  # já usa normalização
+        geometry = calculate_geometric_features(norm)
 
-            # Cálculo dos momentos invariantes para a imagem
-            moments = calculate_invariant_moments(image)
+        if label not in database:
+            database[label] = []
+        database[label].append({'moments': moments.tolist(), 'geometry': geometry})
+        geom_all.append(_geom_vec(geometry))
+        total_variants += 1
 
-            # Cálculo das características geométricas
-            geometric_features = calculate_geometric_features(image)
+    # stats geométricas para z-score
+    if geom_all:
+        geom_all = np.vstack(geom_all)
+        geom_mean = geom_all.mean(axis=0)
+        geom_std  = geom_all.std(axis=0)
+    else:
+        geom_mean = np.array([0,0,1,0], dtype=float)
+        geom_std  = np.array([1,1,1,1], dtype=float)
 
-            # Armazenando as variantes de caracteres no banco
-            if label not in database:
-                database[label] = []
+    database['_stats'] = {
+        'geom_mean': geom_mean.tolist(),
+        'geom_std':  (np.where(geom_std==0, 1.0, geom_std)).tolist(),
+        'config': {'canvas_w':208, 'canvas_h':130, 'target_h':100}
+    }
 
-            database[label].append({'moments': moments.tolist(), 'geometry': geometric_features})
-            total_variants += 1  # Incrementando o total de variantes
-
-    # Salvando o banco de dados em um arquivo pickle
     with open(output_file, "wb") as f:
         pickle.dump(database, f)
 
-    print(f"Base de caracteres criada com {len(database)} labels.")
-    print(f"Total de variantes salvas: {total_variants}")
+    print(f"Base criada com {len(database)-1} labels (excluindo _stats).")
+    print(f"Total de variantes: {total_variants}")
 
 if __name__ == "__main__":
     generate_character_database("src/characters")

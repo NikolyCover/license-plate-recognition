@@ -31,19 +31,44 @@ def segment_characters(binary_image):
     return segmented_image
 
 def extract_characters(binary_image, labeled_image):
+    """
+    Retorna a lista de caracteres recortados ORDENADOS da ESQUERDA para a DIREITA.
+    Também filtra ruídos muito pequenos.
+    """
     characters = []
-    num_labels = np.max(labeled_image)
-    
+    boxes = []
+    num_labels = int(np.max(labeled_image))
+
+    H, W = binary_image.shape
+    min_area = 0.002 * (H * W)   # filtro de área mínima (~0.2% da placa) – ajuste se precisar
+    max_area = 0.30  * (H * W)   # filtro de área máxima (evitar pegar a placa toda/borda)
+
     for label in range(1, num_labels + 1):
         mask = np.zeros_like(binary_image, dtype=np.uint8)
         mask[labeled_image == label] = 255
-        
+
+        # um componente pode ter múltiplos contornos “internos”; pegue o maior externo
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            character = mask[y:y+h, x:x+w]
-            character = cv2.bitwise_not(character)
-            characters.append(character)
-    
-    return characters
+        if not contours:
+            continue
+
+        cnt = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(cnt)
+        area = w * h
+        if area < min_area or area > max_area:
+            continue  # ignora ruído / componentes gigantes (borda, logo etc.)
+
+        # recorte do caractere (mantém como você tinha)
+        char = mask[y:y+h, x:x+w]
+        char = cv2.bitwise_not(char)  # preto em fundo branco (ok pro seu fluxo)
+
+        boxes.append((x, y, w, h))
+        characters.append(char)
+
+    # ORDENAR: esquerda→direita (x), com desempate por y (linhas)
+    order = sorted(range(len(boxes)), key=lambda i: (boxes[i][0], boxes[i][1]))
+    characters_sorted = [characters[i] for i in order]
+    boxes_sorted = [boxes[i] for i in order]
+
+    return characters_sorted, boxes_sorted
+

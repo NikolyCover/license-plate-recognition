@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from find_plate_area import find_plate_area
 from threshold import apply_threshold
-from morphology import apply_erosion, apply_dilation    
+from morphology import apply_erosion, apply_dilation , apply_closing, apply_opening  
 from utils import load_image, show_image
 from segment_characters import segment_characters, extract_characters
 from recognition import recognize_character
@@ -22,19 +22,16 @@ if __name__ == "__main__":
         plate = apply_threshold(plate)
         show_image("Placa Binarizada (Otsu)", plate)
 
-        plate = apply_dilation(plate, iterations=4)
-        show_image("Placa Após Dilatar", plate)
-
-        plate = apply_erosion(plate, iterations=1)
-        show_image("Placa Após Erosão", plate)
+        plate = apply_closing(plate, iterations=1)
+        show_image("Placa Após Fechamento", plate)
 
         segmented_image = segment_characters(plate)
         show_image("Imagem Segmentada", segmented_image, cmap='gray')
 
-        characters = extract_characters(plate, segmented_image)
+        characters, boxes = extract_characters(plate, segmented_image)
 
         for i, char in enumerate(characters):
-            label = recognize_character(char)
+            label = recognize_character(char, pos=i)
             show_image(f"Caractere {i + 1}: {label}", char)
 
     else:
